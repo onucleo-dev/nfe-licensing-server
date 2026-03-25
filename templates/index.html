@@ -25,11 +25,7 @@
 
     <button onclick="gerarPix()">💰 Gerar PIX</button>
 
-    <h3 id="pix"></h3>
-
-    <button onclick="confirmar()" id="btnConfirmar" style="display:none;">
-        ✅ Já paguei
-    </button>
+    <div id="pix"></div>
 
     <h2 id="resultado"></h2>
 
@@ -54,7 +50,7 @@ function atualizarValor() {
         valor.toFixed(2).replace('.', ',');
 }
 
-// GERAR PIX
+// GERAR PIX (CORRIGIDO)
 function gerarPix() {
     const cnpj = document.getElementById("cnpj").value;
     const hwid = document.getElementById("hwid").value;
@@ -69,28 +65,19 @@ function gerarPix() {
     })
     .then(res => res.json())
     .then(data => {
+        console.log(data);
+
         payment_id = data.payment_id;
 
-        document.getElementById("pix").innerText =
-            "Código PIX: " + data.pix_code + "\nValor: R$ " + data.valor;
-
-        document.getElementById("btnConfirmar").style.display = "block";
-    });
-}
-
-// CONFIRMAR PAGAMENTO
-function confirmar() {
-    fetch("/confirmar-pagamento", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ payment_id })
+        document.getElementById("pix").innerHTML = `
+            <p><strong>Valor:</strong> R$ ${data.valor}</p>
+            <p><strong>PIX Copia e Cola:</strong></p>
+            <textarea rows="4" cols="50">${data.pix_copia_cola}</textarea>
+        `;
     })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById("resultado").innerText =
-            "🔑 SUA CHAVE:\n" + data.chave;
+    .catch(err => {
+        console.error(err);
+        alert("Erro ao gerar PIX");
     });
 }
 
