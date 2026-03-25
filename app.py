@@ -1,95 +1,32 @@
 from flask import Flask, request, jsonify, render_template
 from keygen_nfe import generate_key
-import uuid
 import requests
+import datetime
+
+app = Flask(__name__)
 
 # =========================
 # CONFIG ASAAS (SANDBOX)
 # =========================
 
-ASAAS_API_KEY = ""
+ASAAS_API_KEY = "SUA_API_KEY_AQUI"
 ASAAS_URL = "https://sandbox.asaas.com/api/v3"
 
-app = Flask(__name__)
+HEADERS = {
+    "access_token": ASAAS_API_KEY,
+    "Content-Type": "application/json"
+}
 
 # =========================
-# CONFIGURAÇÕES
+# PLANOS
 # =========================
 
 PLANS = {
-    "mensal": 30,
-    "trimestral": 90,
-    "anual": 365,
-    "vitalicio": 36500
+    "mensal": {"dias": 30, "valor": 29.90},
+    "trimestral": {"dias": 90, "valor": 79.90},
+    "anual": {"dias": 365, "valor": 199.90},
+    "vitalicio": {"dias": 36500, "valor": 499.90}
 }
-
-VALORES = {
-    "mensal": 29.90,
-    "trimestral": 79.90,
-    "anual": 199.90,
-    "vitalicio": 499.90
-}
-
-# MAPEAMENTO DE PAGAMENTOS
-PAYMENTS = {}
-
-# =========================
-# FUNÇÕES ASAAS
-# =========================
-
-def criar_cliente_asaas(cnpj):
-    headers = {
-        "access_token": ASAAS_API_KEY,
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "name": f"Cliente {cnpj}",
-        "cpfCnpj": cnpj
-    }
-
-    response = requests.post(
-        f"{ASAAS_URL}/customers",
-        json=data,
-        headers=headers
-    )
-
-    return response.json()
-
-
-def criar_cobranca_pix(customer_id, valor):
-    headers = {
-        "access_token": ASAAS_API_KEY,
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "customer": customer_id,
-        "billingType": "PIX",
-        "value": valor,
-        "dueDate": "2026-12-31"
-    }
-
-    response = requests.post(
-        f"{ASAAS_URL}/payments",
-        json=data,
-        headers=headers
-    )
-
-    return response.json()
-
-
-def obter_qr_code(payment_id):
-    headers = {
-        "access_token": ASAAS_API_KEY
-    }
-
-    response = requests.get(
-        f"{ASAAS_URL}/payments/{payment_id}/pixQrCode",
-        headers=headers
-    )
-
-    return response.json()
 
 # =========================
 # ROTAS
@@ -100,7 +37,7 @@ def home():
     return render_template("index.html")
 
 # =========================
-# CRIAR PAGAMENTO
+# CRIAR PAGAMENTO REAL (ASAAS)
 # =========================
 
 @app.route("/criar-pagamento", methods=["POST"])
@@ -111,74 +48,110 @@ def criar_pagamento():
     hwid = data.get("hwid")
     plano = data.get("plano")
 
-    valor = VALORES.get(plano)
+    if not cnpj or not hwid or not plano:
+        return jsonify({"erro": "Dados incompletos"}), 400
 
-    cliente = criar_cliente_asaas(cnpj)
-    customer_id = cliente.get("id")
+    if plano not in PLANS:
+        return jsonify({"erro": "Plano inválido"}), 400
 
-    cobranca = criar_cobranca_pix(customer_id, valor)
-    payment_id = cobranca.get("id")
+    plano_info = PLANS[plano]
 
-    # 🔥 SALVA PARA USAR NO WEBHOOK
-    PAYMENTS[payment_id] = {
-        "cnpj": cnpj,
-        "hwid": hwid,
-        "plano": plano,
-        "status": "pendente"
+    # =========================
+    # 1. CRIAR CLIENTE
+    # =========================
+
+    cliente_payload = {
+        "name": f"Cliente {cnpj}",
+        "cpfCnpj": cnpj
     }
 
-    qr = obter_qr_code(payment_id)
+    cliente_resp = requests.post(
+        f"{ASAAS_URL}/customers",
+        json=cliente_payload,
+        headers=HEADERS
+    )
+
+    cliente_data = cliente_resp.json()
+
+    if "errors" in cliente_data:
+        return jsonify(cliente_data), 400
+
+    customer_id = cliente_data["id"]
+
+    # =========================
+    # 2. CRIAR COBRANÇA PIX
+    # =========================
+
+    hoje = datetime.date.today()
+    vencimento = hoje + datetime.timedelta(days=1)
+
+    cobranca_payload = {
+        "customer": customer_id,
+        "billingType": "PIX",
+        "value": plano_info["valor"],
+        "dueDate": vencimento.strftime("%Y-%m-%d"),
+        "description": f"NFE Reader - Plano {plano}"
+    }
+
+    cobranca_resp = requests.post(
+        f"{ASAAS_URL}/payments",
+        json=cobranca_payload,
+        headers=HEADERS
+    )
+
+    cobranca_data = cobranca_resp.json()
+
+    if "errors" in cobranca_data:
+        return jsonify(cobranca_data), 400
+
+    payment_id = cobranca_data["id"]
+
+    # =========================
+    # 3. OBTER PIX (QR CODE)
+    # =========================
+
+    pix_resp = requests.get(
+        f"{ASAAS_URL}/payments/{payment_id}/pixQrCode",
+        headers=HEADERS
+    )
+
+    pix_data = pix_resp.json()
 
     return jsonify({
         "payment_id": payment_id,
-        "valor": valor,
-        "qr_code": qr.get("encodedImage"),
-        "pix_copia_cola": qr.get("payload")
+        "valor": plano_info["valor"],
+        "pix_copia_cola": pix_data.get("payload"),
+        "qr_code_base64": pix_data.get("encodedImage")
     })
 
+
 # =========================
-# WEBHOOK (AQUI ESTÁ O PODER)
+# WEBHOOK (PRÓXIMO PASSO)
 # =========================
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
+    print("Webhook recebido:", data)
+    return "", 200
 
-    evento = data.get("event")
-    pagamento = data.get("payment")
 
-    if not pagamento:
-        return jsonify({"status": "ignorado"})
+# =========================
+# TESTE ASAAS
+# =========================
 
-    payment_id = pagamento.get("id")
+@app.route("/teste-asaas")
+def teste_asaas():
+    response = requests.get(
+        f"{ASAAS_URL}/customers",
+        headers=HEADERS
+    )
+    return response.json()
 
-    # 🔥 SOMENTE QUANDO PAGO
-    if evento == "PAYMENT_RECEIVED":
-        info = PAYMENTS.get(payment_id)
-
-        if not info:
-            return jsonify({"status": "pagamento não encontrado"})
-
-        dias = PLANS.get(info["plano"])
-
-        chave = generate_key(
-            info["cnpj"],
-            info["hwid"],
-            dias
-        )
-
-        # Aqui você pode salvar, enviar email, etc
-        print("🔥 PAGAMENTO CONFIRMADO")
-        print("🔑 CHAVE GERADA:", chave)
-
-        info["status"] = "pago"
-        info["chave"] = chave
-
-    return jsonify({"status": "ok"})
 
 # =========================
 # RUN
 # =========================
 
 if __name__ == "__main__":
-    app.run    
+    app.run()
