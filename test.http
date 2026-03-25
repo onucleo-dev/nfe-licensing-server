@@ -1,0 +1,8 @@
+POST http://127.0.0.1:5000/gerar-chave
+Content-Type: application/json
+
+{
+  "cnpj": "59353350000",
+  "hwid": "37728284676517",
+  "plano": "mensal"
+}

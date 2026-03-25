@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Renovação NFE Reader</title>
+</head>
+<body>
+
+    <h2>Renovar Licença</h2>
+
+    <label>CNPJ:</label><br>
+    <input type="text" id="cnpj"><br><br>
+
+    <label>HWID:</label><br>
+    <input type="text" id="hwid"><br><br>
+
+    <label>Plano:</label><br>
+    <select id="plano" onchange="atualizarValor()">
+        <option value="mensal">30 dias (Mensal)</option>
+        <option value="trimestral">90 dias (Melhor custo)</option>
+        <option value="anual">365 dias (Mais econômico)</option>
+        <option value="vitalicio">Vitalício</option>
+    </select><br><br>
+
+    <p><strong>Valor:</strong> R$ <span id="valor">0,00</span></p>
+
+    <button onclick="gerarPix()">💰 Gerar PIX</button>
+
+    <h3 id="pix"></h3>
+
+    <button onclick="confirmar()" id="btnConfirmar" style="display:none;">
+        ✅ Já paguei
+    </button>
+
+    <h2 id="resultado"></h2>
+
+<script>
+
+// Valores
+const valores = {
+    mensal: 29.90,
+    trimestral: 79.90,
+    anual: 199.90,
+    vitalicio: 499.90
+};
+
+let payment_id = null;
+
+// Atualiza valor
+function atualizarValor() {
+    const plano = document.getElementById("plano").value;
+    const valor = valores[plano];
+
+    document.getElementById("valor").innerText =
+        valor.toFixed(2).replace('.', ',');
+}
+
+// GERAR PIX
+function gerarPix() {
+    const cnpj = document.getElementById("cnpj").value;
+    const hwid = document.getElementById("hwid").value;
+    const plano = document.getElementById("plano").value;
+
+    fetch("/criar-pagamento", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ cnpj, hwid, plano })
+    })
+    .then(res => res.json())
+    .then(data => {
+        payment_id = data.payment_id;
+
+        document.getElementById("pix").innerText =
+            "Código PIX: " + data.pix_code + "\nValor: R$ " + data.valor;
+
+        document.getElementById("btnConfirmar").style.display = "block";
+    });
+}
+
+// CONFIRMAR PAGAMENTO
+function confirmar() {
+    fetch("/confirmar-pagamento", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ payment_id })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("resultado").innerText =
+            "🔑 SUA CHAVE:\n" + data.chave;
+    });
+}
+
+// init
+atualizarValor();
+
+</script>
+
+</body>
+</html>
