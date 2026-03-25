@@ -131,7 +131,7 @@ def criar_pagamento():
     return jsonify({
         "payment_id": payment_id,
         "valor": plano_info["valor"],
-        "pix_copia_cola": pix_data.get("payload")
+        "pix_copia_cola": pix_data.get("payload"),
         "qr_code": pix_data.get("encodedImage")
     })
 
