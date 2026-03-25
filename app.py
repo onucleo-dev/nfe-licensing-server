@@ -9,7 +9,9 @@ app = Flask(__name__)
 # CONFIG ASAAS
 # =========================
 
-ASAAS_API_KEY = "$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjA0YzM3NGM1LWYxZWYtNDk2ZS1iM2Q5LTc2OTY4N2EzMDJhZDo6JGFhY2hfZWQwMzY1ZWYtYTc4OS00N2IzLThjYjItM2YwMmFiN2ZlYzkx"
+import os
+
+ASAAS_API_KEY = os.getenv("ASAAS_API_KEY")
 ASAAS_URL = "https://sandbox.asaas.com/api/v3"
 
 HEADERS = {
