@@ -127,6 +127,7 @@ def criar_pagamento():
     )
 
     pix_data = pix_resp.json()
+    print("PIX DATA:", pix_data)
 
     return jsonify({
         "payment_id": payment_id,
