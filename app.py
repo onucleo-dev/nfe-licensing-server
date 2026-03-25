@@ -6,10 +6,10 @@ import datetime
 app = Flask(__name__)
 
 # =========================
-# CONFIG ASAAS (SANDBOX)
+# CONFIG ASAAS
 # =========================
 
-ASAAS_API_KEY = "$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjA0YzM3NGM1LWYxZWYtNDk2ZS1iM2Q5LTc2OTY4N2EzMDJhZDo6JGFhY2hfZWQwMzY1ZWYtYTc4OS00N2IzLThjYjItM2YwMmFiN2ZlYzkx"
+ASAAS_API_KEY = "SUA_API_KEY_AQUI"
 ASAAS_URL = "https://sandbox.asaas.com/api/v3"
 
 HEADERS = {
@@ -29,6 +29,12 @@ PLANS = {
 }
 
 # =========================
+# "BANCO" TEMPORÁRIO
+# =========================
+
+PAYMENTS = {}
+
+# =========================
 # ROTAS
 # =========================
 
@@ -36,8 +42,9 @@ PLANS = {
 def home():
     return render_template("index.html")
 
+
 # =========================
-# CRIAR PAGAMENTO REAL (ASAAS)
+# CRIAR PAGAMENTO
 # =========================
 
 @app.route("/criar-pagamento", methods=["POST"])
@@ -57,17 +64,15 @@ def criar_pagamento():
     plano_info = PLANS[plano]
 
     # =========================
-    # 1. CRIAR CLIENTE
+    # CRIAR CLIENTE
     # =========================
-
-    cliente_payload = {
-        "name": f"Cliente {cnpj}",
-        "cpfCnpj": cnpj
-    }
 
     cliente_resp = requests.post(
         f"{ASAAS_URL}/customers",
-        json=cliente_payload,
+        json={
+            "name": f"Cliente {cnpj}",
+            "cpfCnpj": cnpj
+        },
         headers=HEADERS
     )
 
@@ -79,23 +84,20 @@ def criar_pagamento():
     customer_id = cliente_data["id"]
 
     # =========================
-    # 2. CRIAR COBRANÇA PIX
+    # CRIAR COBRANÇA
     # =========================
 
-    hoje = datetime.date.today()
-    vencimento = hoje + datetime.timedelta(days=1)
-
-    cobranca_payload = {
-        "customer": customer_id,
-        "billingType": "PIX",
-        "value": plano_info["valor"],
-        "dueDate": vencimento.strftime("%Y-%m-%d"),
-        "description": f"NFE Reader - Plano {plano}"
-    }
+    vencimento = datetime.date.today() + datetime.timedelta(days=1)
 
     cobranca_resp = requests.post(
         f"{ASAAS_URL}/payments",
-        json=cobranca_payload,
+        json={
+            "customer": customer_id,
+            "billingType": "PIX",
+            "value": plano_info["valor"],
+            "dueDate": vencimento.strftime("%Y-%m-%d"),
+            "description": f"NFE Reader - {plano}"
+        },
         headers=HEADERS
     )
 
@@ -106,8 +108,15 @@ def criar_pagamento():
 
     payment_id = cobranca_data["id"]
 
+    # 🔥 SALVAR NO "BANCO"
+    PAYMENTS[payment_id] = {
+        "cnpj": cnpj,
+        "hwid": hwid,
+        "plano": plano
+    }
+
     # =========================
-    # 3. OBTER PIX (QR CODE)
+    # OBTER PIX
     # =========================
 
     pix_resp = requests.get(
@@ -120,19 +129,42 @@ def criar_pagamento():
     return jsonify({
         "payment_id": payment_id,
         "valor": plano_info["valor"],
-        "pix_copia_cola": pix_data.get("payload"),
-        "qr_code_base64": pix_data.get("encodedImage")
+        "pix_copia_cola": pix_data.get("payload")
     })
 
 
 # =========================
-# WEBHOOK (PRÓXIMO PASSO)
+# WEBHOOK (AUTOMÁTICO)
 # =========================
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.json
-    print("Webhook recebido:", data)
+
+    print("📩 Webhook recebido:", data)
+
+    if data.get("event") == "PAYMENT_RECEIVED":
+        payment = data.get("payment", {})
+        payment_id = payment.get("id")
+
+        if payment_id in PAYMENTS:
+            info = PAYMENTS[payment_id]
+
+            dias = PLANS[info["plano"]]["dias"]
+
+            chave = generate_key(
+                info["cnpj"],
+                info["hwid"],
+                dias
+            )
+
+            print("🔑 CHAVE GERADA:", chave)
+
+            # Aqui depois você pode:
+            # enviar email
+            # salvar banco
+            # enviar pro app
+
     return "", 200
 
 
