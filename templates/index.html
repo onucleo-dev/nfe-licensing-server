@@ -70,7 +70,11 @@ function gerarPix() {
         payment_id = data.payment_id;
 
         document.getElementById("pix").innerHTML = `
-            <p><strong>Valor:</strong> R$ ${data.valor}</p>
+           <p><strong>Valor:</strong> R$ ${data.valor}</p>
+
+            <p><strong>QR Code:</strong></p>
+            <img src="data:image/png;base64,${data.qr_code}" width="200"/>
+
             <p><strong>PIX Copia e Cola:</strong></p>
             <textarea rows="4" cols="50">${data.pix_copia_cola}</textarea>
         `;
