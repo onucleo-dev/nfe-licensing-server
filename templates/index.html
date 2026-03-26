@@ -27,6 +27,14 @@
 
     <div id="pix"></div>
 
+    <h2>Consultar Status / Licença</h2>
+    <label>CNPJ:</label><br>
+    <input type="text" id="cnpj_status"><br><br>
+    <label>HWID:</label><br>
+    <input type="text" id="hwid_status"><br><br>
+    <button onclick="consultarLicenca()">🔎 Consultar</button>
+    <div id="consulta"></div>
+
     <h2 id="resultado"></h2>
 
 <script>
@@ -83,6 +91,37 @@ function gerarPix() {
         console.error(err);
         alert("Erro ao gerar PIX");
     });
+}
+
+function consultarLicenca() {
+    const cnpj = document.getElementById("cnpj_status").value;
+    const hwid = document.getElementById("hwid_status").value;
+
+    if (!cnpj || !hwid) {
+        alert("Preencha CNPJ e HWID para consulta");
+        return;
+    }
+
+    fetch(`/consulta-licenca?cnpj=${encodeURIComponent(cnpj)}&hwid=${encodeURIComponent(hwid)}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            if (data.erro) {
+                document.getElementById("consulta").innerHTML = `<p style="color:red">${data.erro}</p>`;
+                return;
+            }
+
+            document.getElementById("consulta").innerHTML = `
+                <p><strong>Pagamento:</strong> ${data.payment.id} (${data.payment.status})</p>
+                <p><strong>Plano:</strong> ${data.payment.plano}</p>
+                <p><strong>Chave:</strong> ${data.license.license_key ?? 'Não gerada ainda'}</p>
+                <p><strong>Válida até:</strong> ${data.license.expires_at ?? '-'}</p>
+            `;
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Erro na consulta");
+        });
 }
 
 // init

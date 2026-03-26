@@ -1,8 +1,43 @@
-POST http://127.0.0.1:5000/gerar-chave
+POST http://127.0.0.1:5000/criar-pagamento
 Content-Type: application/json
 
 {
-  "cnpj": "59353350000",
-  "hwid": "37728284676517",
+  "cnpj": "12345678000199",
+  "hwid": "ABC-123-XYZ",
   "plano": "mensal"
 }
+
+###
+
+POST http://127.0.0.1:5000/webhook
+Content-Type: application/json
+X-Hook-Token: meu_token_secreto
+
+{
+  "event": "PAYMENT_RECEIVED",
+  "payment": {
+    "id": "pay_123456789"
+  }
+}
+
+###
+
+GET http://127.0.0.1:5000/status/pay_123456789
+
+###
+
+GET http://127.0.0.1:5000/consulta-licenca?cnpj=12345678000199&hwid=ABC-123-XYZ
+
+###
+
+POST http://127.0.0.1:5000/obter-licenca
+Content-Type: application/json
+
+{
+  "cnpj": "12345678000199",
+  "hwid": "ABC-123-XYZ"
+}
+
+###
+
+GET http://127.0.0.1:5000/teste-asaas
