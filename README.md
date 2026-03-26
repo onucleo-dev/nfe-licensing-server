@@ -6,14 +6,16 @@ Sistema de licenciamento automático para NFE Reader (Flask + Asaas + SQLite + w
 
 - Python 3.8+
 - Dependências: `pip install -r requirements.txt`
-- Copie `.env.example` para `.env` e configure as variáveis de ambiente
-- Variáveis de ambiente:
-  - `ASAAS_API_KEY` (obrigatório)
-  - `SECRET_WORD` (opcional, usado para gerar chave, default seguro)
-  - `ASAAS_URL` (opcional, default sandbox)
-  - `DATABASE_PATH` (opcional, default `nfe_licensing.db`)
-  - `WEBHOOK_TOKEN` (opcional, para proteção de webhook)
-  - `LICENSE_CALLBACK_URL` (opcional, webhook interno para entrega de chave)
+- Copie `.env.example` para `.env` e configure as variáveis obrigatórias
+- Variáveis de ambiente obrigatórias:
+  - `ASAAS_API_KEY` (chave da API Asaas)
+- Variáveis opcionais:
+  - `SECRET_WORD` (padrão seguro se não definido)
+  - `ASAAS_URL` (padrão: sandbox)
+  - `DATABASE_PATH` (padrão: `nfe_licensing.db`)
+  - `WEBHOOK_TOKEN` (proteção webhook)
+  - `LICENSE_CALLBACK_URL` (entrega automática)
+  - `PORT` (padrão: 5000)
 
 ## Endpoints
 
@@ -36,9 +38,23 @@ Sistema de licenciamento automático para NFE Reader (Flask + Asaas + SQLite + w
 
 ## Como rodar local
 
-1. `set ASAAS_API_KEY=...` (Windows)
-2. `python app.py`
-3. Acesse `http://localhost:5000`
+1. **Instalar dependências**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Configurar ambiente**:
+   ```bash
+   cp .env.example .env
+   # Edite .env com suas chaves
+   ```
+
+3. **Executar**:
+   ```bash
+   python app.py
+   ```
+
+4. **Acessar**: `http://localhost:5000`
 
 ## Render Deploy
 
