@@ -405,6 +405,30 @@ def obter_licenca():
     }), 200
 
 
+@app.route("/simular-pagamento/<payment_id>", methods=["POST"])
+def simular_pagamento(payment_id):
+    record = get_payment(payment_id)
+    if not record:
+        return jsonify({"erro": "Pagamento não encontrado"}), 404
+
+    if record["status"] == "PAID":
+        return jsonify({"status": "já processado"}), 200
+
+    try:
+        dias = PLANS.get(record["plano"], {}).get("dias", 0)
+        chave = generate_key(record["customer_cnpj"], record["hwid"], dias)
+        expires_at = (datetime.datetime.utcnow() + datetime.timedelta(days=dias)).strftime("%Y-%m-%d")
+
+        insert_license(payment_id, chave, expires_at)
+        update_payment_status(payment_id, "PAID")
+
+        logger.info("Pagamento simulado para %s: %s", payment_id, chave)
+        return jsonify({"status": "ok", "license_key": chave, "expires_at": expires_at}), 200
+    except Exception as e:
+        logger.exception("Falha ao simular pagamento")
+        return jsonify({"erro": "Falha interna"}), 500
+
+
 @app.route("/hwids")
 def list_hwids():
     cnpj = request.args.get("cnpj")

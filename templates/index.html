@@ -374,6 +374,7 @@
                 <span id="pollText">Aguardando pagamento...</span>
             </div>
         </div>
+        <button class="btn btn-success" id="btnSimular" style="display:none;margin-top:8px">🧪 Simular Pagamento (Teste)</button>
         <button class="btn btn-primary" id="btnNovoPix" style="display:none">← Novo Pagamento</button>
     </div>
 
@@ -513,6 +514,9 @@ $('btnGerarPix').addEventListener('click', async () => {
         $('pixCopiaCola').value = data.pix_copia_cola || '';
 
         setStep(2);
+        const simBtn = $('btnSimular');
+        simBtn.style.display = 'block';
+        simBtn.onclick = () => simular(data.payment_id, cnpj, hwid);
         startPolling(data.payment_id, cnpj, hwid);
 
     } catch (err) {
@@ -557,6 +561,31 @@ function startPolling(paymentId, cnpj, hwid) {
             }
         }
     }, 3000);
+}
+
+// SIMULAR PAGAMENTO (ambiente sandbox/teste)
+async function simular(paymentId, cnpj, hwid) {
+    const btn = $('btnSimular');
+    btn.disabled = true;
+    btn.textContent = '⏳ Simulando...';
+    try {
+        const res = await fetch(`/simular-pagamento/${paymentId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.license_key) {
+            clearInterval(pollTimer);
+            $('pollSpinner').style.display = 'none';
+            $('pollText').textContent = '✅ Pagamento simulado com sucesso!';
+            $('statusPoll').classList.remove('visible');
+            btn.style.display = 'none';
+            showResult(cnpj, hwid);
+        } else {
+            toast(data.erro || 'Erro ao simular', 'error');
+        }
+    } catch {
+        toast('Erro ao conectar com o servidor', 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = '🧪 Simular Pagamento (Teste)';
 }
 
 // RESULT
