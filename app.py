@@ -215,6 +215,10 @@ def home():
 def download():
     return redirect("https://github.com/onucleo-dev/nfe-licensing-server/releases/latest/download/NFE_Reader.exe")
 
+@app.route("/manual")
+def manual():
+    return redirect("/static/MANUAL_DO_USUARIO.pdf")
+
 
 @app.route("/criar-pagamento", methods=["POST"])
 def criar_pagamento():
