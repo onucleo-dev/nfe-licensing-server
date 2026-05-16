@@ -1,133 +1,625 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Renovação NFE Reader</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFE Reader — Renovar Licença</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+        .container {
+            width: 100%;
+            max-width: 520px;
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .logo p {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 28px;
+        }
+        .step {
+            width: 32px;
+            height: 4px;
+            border-radius: 4px;
+            background: #334155;
+            transition: background 0.3s;
+        }
+        .step.active { background: #60a5fa; }
+        .step.done { background: #22c55e; }
+
+        .section { display: none; }
+        .section.active { display: block; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #f1f5f9;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96,165,250,0.15);
+        }
+        .form-group input::placeholder { color: #475569; }
+        .form-group select { cursor: pointer; }
+        .form-group select option { background: #1e293b; color: #f1f5f9; }
+
+        .planos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .plano-card {
+            padding: 14px 12px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            text-align: center;
+        }
+        .plano-card:hover { border-color: #475569; }
+        .plano-card.selected {
+            border-color: #60a5fa;
+            background: rgba(96,165,250,0.08);
+        }
+        .plano-card .nome {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .plano-card .dias {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        .plano-card .preco {
+            font-size: 16px;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-top: 6px;
+        }
+        .plano-card .preco .cifrao { font-size: 12px; }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+        }
+        .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(59,130,246,0.5); }
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(34,197,94,0.35);
+        }
+
+        .pix-area {
+            text-align: center;
+            padding: 24px 0 16px;
+        }
+        .pix-area .valor-display {
+            font-size: 32px;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 20px;
+        }
+        .pix-area .qr-wrapper {
+            display: inline-block;
+            padding: 12px;
+            background: #fff;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+        .pix-area .qr-wrapper img { display: block; width: 200px; height: 200px; }
+        .pix-area .pix-copia {
+            display: flex;
+            gap: 8px;
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 10px 14px;
+            align-items: center;
+        }
+        .pix-area .pix-copia input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #cbd5e1;
+            font-size: 12px;
+            font-family: monospace;
+            outline: none;
+        }
+        .pix-area .pix-copia button {
+            padding: 6px 14px;
+            background: #334155;
+            border: none;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .pix-area .pix-copia button:hover { background: #475569; }
+        .pix-area .pix-copia button.copied { background: #22c55e; }
+
+        .status-poll {
+            margin-top: 16px;
+            padding: 14px;
+            background: #0f172a;
+            border-radius: 12px;
+            display: none;
+        }
+        .status-poll.visible { display: block; }
+        .status-poll .msg {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .status-poll .msg .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid #334155;
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .status-poll .msg .check { color: #22c55e; font-size: 20px; }
+
+        .result-box {
+            text-align: center;
+            padding: 24px 0;
+        }
+        .result-box .icon { font-size: 48px; margin-bottom: 12px; }
+        .result-box .icon.success { color: #22c55e; }
+        .result-box .icon.fail { color: #ef4444; }
+        .result-box h2 { font-size: 20px; margin-bottom: 8px; }
+        .result-box .key-display {
+            margin: 16px auto;
+            padding: 12px 16px;
+            background: #0f172a;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #fbbf24;
+            word-break: break-all;
+            display: inline-block;
+        }
+        .result-box .info-line {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 6px;
+        }
+
+        .consulta-area { margin-top: 24px; padding-top: 20px; border-top: 1px solid #334155; }
+        .consulta-area summary {
+            cursor: pointer;
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .consulta-area .consulta-form { margin-top: 16px; }
+        .consulta-area .consulta-result {
+            margin-top: 12px;
+            padding: 12px;
+            background: #0f172a;
+            border-radius: 10px;
+            font-size: 13px;
+            display: none;
+        }
+        .consulta-area .consulta-result.visible { display: block; }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            transition: transform 0.3s ease;
+            z-index: 100;
+            border: 1px solid #334155;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.error { border-color: #ef4444; }
+        .toast.success { border-color: #22c55e; }
+
+        @media (max-width: 480px) {
+            .container { padding: 24px 16px; border-radius: 16px; }
+            .planos { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .plano-card { padding: 10px 8px; }
+            .plano-card .preco { font-size: 14px; }
+            .pix-area .qr-wrapper img { width: 160px; height: 160px; }
+        }
+    </style>
 </head>
 <body>
 
-    <h2>Renovar Licença</h2>
+<div class="container">
+    <div class="logo">
+        <h1>NFE Reader</h1>
+        <p>Renovação de Licença</p>
+    </div>
 
-    <label>CNPJ:</label><br>
-    <input type="text" id="cnpj"><br><br>
+    <div class="step-indicator">
+        <div class="step active" id="step1"></div>
+        <div class="step" id="step2"></div>
+        <div class="step" id="step3"></div>
+    </div>
 
-    <label>HWID:</label><br>
-    <input type="text" id="hwid"><br><br>
+    <!-- STEP 1: DADOS -->
+    <div class="section active" id="section1">
+        <div class="form-group">
+            <label>CNPJ ou CPF</label>
+            <input type="text" id="cnpj" placeholder="Apenas números" maxlength="14" inputmode="numeric">
+        </div>
+        <div class="form-group">
+            <label>HWID (Código da Máquina)</label>
+            <input type="text" id="hwid" placeholder="Ex: ABC-123-XYZ">
+        </div>
+        <div class="form-group">
+            <label>Plano</label>
+        </div>
+        <div class="planos" id="planosContainer">
+            <div class="plano-card selected" data-plano="mensal" data-valor="29.90">
+                <div class="nome">Mensal</div>
+                <div class="dias">30 dias</div>
+                <div class="preco"><span class="cifrao">R$ </span>29,90</div>
+            </div>
+            <div class="plano-card" data-plano="trimestral" data-valor="79.90">
+                <div class="nome">Trimestral</div>
+                <div class="dias">90 dias</div>
+                <div class="preco"><span class="cifrao">R$ </span>79,90</div>
+            </div>
+            <div class="plano-card" data-plano="anual" data-valor="199.90">
+                <div class="nome">Anual</div>
+                <div class="dias">365 dias</div>
+                <div class="preco"><span class="cifrao">R$ </span>199,90</div>
+            </div>
+            <div class="plano-card" data-plano="vitalicio" data-valor="499.90">
+                <div class="nome">Vitalício</div>
+                <div class="dias">Ilimitado</div>
+                <div class="preco"><span class="cifrao">R$ </span>499,90</div>
+            </div>
+        </div>
+        <button class="btn btn-primary" id="btnGerarPix">💰 Gerar PIX para Pagamento</button>
+    </div>
 
-    <label>Plano:</label><br>
-    <select id="plano" onchange="atualizarValor()">
-        <option value="mensal">30 dias (Mensal)</option>
-        <option value="trimestral">90 dias (Melhor custo)</option>
-        <option value="anual">365 dias (Mais econômico)</option>
-        <option value="vitalicio">Vitalício</option>
-    </select><br><br>
+    <!-- STEP 2: PIX -->
+    <div class="section" id="section2">
+        <div class="pix-area" id="pixArea">
+            <div class="valor-display" id="valorPix">R$ 0,00</div>
+            <div class="qr-wrapper"><img id="qrcodeImg" src="" alt="QR Code PIX"></div>
+            <div class="pix-copia">
+                <input type="text" id="pixCopiaCola" readonly>
+                <button id="btnCopiar">Copiar</button>
+            </div>
+        </div>
+        <div class="status-poll" id="statusPoll">
+            <div class="msg" id="pollMsg">
+                <div class="spinner" id="pollSpinner"></div>
+                <span id="pollText">Aguardando pagamento...</span>
+            </div>
+        </div>
+        <button class="btn btn-primary" id="btnNovoPix" style="display:none">← Novo Pagamento</button>
+    </div>
 
-    <p><strong>Valor:</strong> R$ <span id="valor">0,00</span></p>
+    <!-- STEP 3: RESULTADO -->
+    <div class="section" id="section3">
+        <div class="result-box" id="resultBox">
+            <div class="icon" id="resultIcon">✅</div>
+            <h2 id="resultTitle">Pagamento Confirmado!</h2>
+            <div class="key-display" id="resultKey">NFE-XXXX-...</div>
+            <div class="info-line" id="resultExpiry">Válida até: --</div>
+            <div class="info-line" id="resultPlano">Plano: --</div>
+        </div>
+        <button class="btn btn-primary" id="btnNovo" style="margin-top:16px">← Nova Renovação</button>
+    </div>
 
-    <button onclick="gerarPix()">💰 Gerar PIX</button>
+    <!-- CONSULTA (collapsible) -->
+    <div class="consulta-area">
+        <details>
+            <summary>🔎 Consultar Licença Existente</summary>
+            <div class="consulta-form">
+                <div class="form-group">
+                    <label>CNPJ</label>
+                    <input type="text" id="cnpjConsulta" placeholder="Apenas números">
+                </div>
+                <div class="form-group">
+                    <label>HWID</label>
+                    <input type="text" id="hwidConsulta" placeholder="Código da máquina">
+                </div>
+                <button class="btn btn-primary" id="btnConsultar">Consultar</button>
+                <div class="consulta-result" id="consultaResult"></div>
+            </div>
+        </details>
+    </div>
+</div>
 
-    <div id="pix"></div>
-
-    <h2>Consultar Status / Licença</h2>
-    <label>CNPJ:</label><br>
-    <input type="text" id="cnpj_status"><br><br>
-    <label>HWID:</label><br>
-    <input type="text" id="hwid_status"><br><br>
-    <button onclick="consultarLicenca()">🔎 Consultar</button>
-    <div id="consulta"></div>
-
-    <h2 id="resultado"></h2>
+<div class="toast" id="toast"></div>
 
 <script>
+const $ = id => document.getElementById(id);
+const planos = { mensal: 29.90, trimestral: 79.90, anual: 199.90, vitalicio: 499.90 };
+let pollTimer = null;
 
-// Valores
-const valores = {
-    mensal: 29.90,
-    trimestral: 79.90,
-    anual: 199.90,
-    vitalicio: 499.90
-};
-
-let payment_id = null;
-
-// Atualiza valor
-function atualizarValor() {
-    const plano = document.getElementById("plano").value;
-    const valor = valores[plano];
-
-    document.getElementById("valor").innerText =
-        valor.toFixed(2).replace('.', ',');
-}
-
-// GERAR PIX (CORRIGIDO)
-function gerarPix() {
-    const cnpj = document.getElementById("cnpj").value;
-    const hwid = document.getElementById("hwid").value;
-    const plano = document.getElementById("plano").value;
-
-    fetch("/criar-pagamento", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ cnpj, hwid, plano })
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log(data);
-
-        payment_id = data.payment_id;
-
-        document.getElementById("pix").innerHTML = `
-           <p><strong>Valor:</strong> R$ ${data.valor}</p>
-
-            <p><strong>QR Code:</strong></p>
-            <img src="data:image/png;base64,${data.qr_code}" width="200"/>
-
-            <p><strong>PIX Copia e Cola:</strong></p>
-            <textarea rows="4" cols="50">${data.pix_copia_cola}</textarea>
-        `;
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Erro ao gerar PIX");
+// Plano cards
+document.querySelectorAll('.plano-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('.plano-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
     });
+});
+
+function getSelectedPlano() {
+    const sel = document.querySelector('.plano-card.selected');
+    return sel ? sel.dataset.plano : 'mensal';
 }
 
-function consultarLicenca() {
-    const cnpj = document.getElementById("cnpj_status").value;
-    const hwid = document.getElementById("hwid_status").value;
+function getPlanoValor(plano) {
+    return planos[plano] || 29.90;
+}
 
-    if (!cnpj || !hwid) {
-        alert("Preencha CNPJ e HWID para consulta");
-        return;
+// Toast
+function toast(msg, type = '') {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + type;
+    requestAnimationFrame(() => t.classList.add('show'));
+    clearTimeout(t._hide);
+    t._hide = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function setStep(n) {
+    for (let i = 1; i <= 3; i++) {
+        $('section' + i).classList.toggle('active', i === n);
+        const step = $('step' + i);
+        step.classList.toggle('active', i === n);
+        step.classList.toggle('done', i < n);
     }
-
-    fetch(`/consulta-licenca?cnpj=${encodeURIComponent(cnpj)}&hwid=${encodeURIComponent(hwid)}`)
-        .then(res => res.json())
-        .then(data => {
-            console.log(data);
-            if (data.erro) {
-                document.getElementById("consulta").innerHTML = `<p style="color:red">${data.erro}</p>`;
-                return;
-            }
-
-            document.getElementById("consulta").innerHTML = `
-                <p><strong>Pagamento:</strong> ${data.payment.id} (${data.payment.status})</p>
-                <p><strong>Plano:</strong> ${data.payment.plano}</p>
-                <p><strong>Chave:</strong> ${data.license.license_key ?? 'Não gerada ainda'}</p>
-                <p><strong>Válida até:</strong> ${data.license.expires_at ?? '-'}</p>
-            `;
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Erro na consulta");
-        });
 }
 
-// init
-atualizarValor();
+// GERAR PIX
+$('btnGerarPix').addEventListener('click', async () => {
+    const cnpj = $('cnpj').value.replace(/\D/g, '');
+    const hwid = $('hwid').value.trim();
+    const plano = getSelectedPlano();
 
+    if (!cnpj || cnpj.length < 11) return toast('Digite um CNPJ/CPF válido (apenas números)', 'error');
+    if (!hwid) return toast('Digite o HWID da máquina', 'error');
+
+    const btn = $('btnGerarPix');
+    btn.disabled = true;
+    btn.textContent = '⏳ Gerando PIX...';
+
+    try {
+        const res = await fetch('/criar-pagamento', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cnpj, hwid, plano })
+        });
+        const data = await res.json();
+
+        if (data.erro) {
+            toast(data.erro + (data.detalhes ? ': ' + data.detalhes : ''), 'error');
+            btn.disabled = false;
+            btn.textContent = '💰 Gerar PIX para Pagamento';
+            return;
+        }
+
+        $('valorPix').textContent = 'R$ ' + data.valor.toFixed(2).replace('.', ',');
+        $('qrcodeImg').src = 'data:image/png;base64,' + data.qr_code;
+        $('pixCopiaCola').value = data.pix_copia_cola || '';
+
+        setStep(2);
+        startPolling(data.payment_id, cnpj, hwid);
+
+    } catch (err) {
+        toast('Erro ao conectar com o servidor', 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = '💰 Gerar PIX para Pagamento';
+});
+
+// POLLING
+function startPolling(paymentId, cnpj, hwid) {
+    const poll = $('statusPoll');
+    poll.classList.add('visible');
+    $('pollSpinner').style.display = 'block';
+    $('pollText').textContent = 'Aguardando pagamento...';
+
+    let attempts = 0;
+    clearInterval(pollTimer);
+
+    pollTimer = setInterval(async () => {
+        attempts++;
+        try {
+            const res = await fetch(`/status/${paymentId}`);
+            const data = await res.json();
+
+            if (data.payment?.status === 'PAID') {
+                clearInterval(pollTimer);
+                $('pollSpinner').style.display = 'none';
+                $('pollText').textContent = '✅ Pagamento confirmado!';
+                poll.classList.remove('visible');
+                showResult(cnpj, hwid);
+            } else if (attempts > 60) {
+                clearInterval(pollTimer);
+                $('pollSpinner').style.display = 'none';
+                $('pollText').textContent = '⏰ Tempo esgotado. Consulte manualmente abaixo.';
+                $('pollSpinner').style.display = 'none';
+            }
+        } catch {
+            if (attempts > 60) {
+                clearInterval(pollTimer);
+                $('pollText').textContent = '⏰ Erro na consulta. Tente manualmente.';
+            }
+        }
+    }, 3000);
+}
+
+// RESULT
+async function showResult(cnpj, hwid) {
+    try {
+        const res = await fetch('/obter-licenca', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cnpj, hwid })
+        });
+        const data = await res.json();
+
+        setStep(3);
+        if (data.license_key) {
+            $('resultIcon').textContent = '✅';
+            $('resultTitle').textContent = 'Licença Ativada com Sucesso!';
+            $('resultKey').textContent = data.license_key;
+            $('resultExpiry').textContent = 'Válida até: ' + data.expires_at;
+            $('resultPlano').textContent = 'Plano: ' + (data.plano || '--');
+        } else {
+            $('resultIcon').textContent = '⏳';
+            $('resultTitle').textContent = 'Pagamento Confirmado!';
+            $('resultKey').textContent = 'Gerando chave...';
+            $('resultExpiry').textContent = 'A chave será liberada em instantes.';
+            $('resultPlano').textContent = '';
+        }
+    } catch {
+        setStep(3);
+        $('resultIcon').textContent = '✅';
+        $('resultTitle').textContent = 'Pagamento Confirmado!';
+        $('resultKey').textContent = 'Consulte sua licença abaixo';
+        $('resultExpiry').textContent = '';
+        $('resultPlano').textContent = '';
+    }
+}
+
+// Copy PIX
+$('btnCopiar').addEventListener('click', () => {
+    const input = $('pixCopiaCola');
+    input.select();
+    navigator.clipboard.writeText(input.value).catch(() => {});
+    const btn = $('btnCopiar');
+    btn.textContent = '✅ Copiado';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    toast('Código PIX copiado!', 'success');
+});
+
+// Novo pagamento
+$('btnNovoPix').addEventListener('click', () => {
+    clearInterval(pollTimer);
+    setStep(1);
+});
+$('btnNovo').addEventListener('click', () => {
+    setStep(1);
+});
+
+// CONSULTA
+$('btnConsultar').addEventListener('click', async () => {
+    const cnpj = $('cnpjConsulta').value.replace(/\D/g, '');
+    const hwid = $('hwidConsulta').value.trim();
+    if (!cnpj || !hwid) return toast('Preencha CNPJ e HWID', 'error');
+
+    const resultDiv = $('consultaResult');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><div class="spinner" style="width:14px;height:14px;border:2px solid #334155;border-top-color:#60a5fa;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block"></div> Consultando...</div>';
+
+    try {
+        const res = await fetch(`/consulta-licenca?cnpj=${encodeURIComponent(cnpj)}&hwid=${encodeURIComponent(hwid)}`);
+        const data = await res.json();
+        if (data.erro) {
+            resultDiv.innerHTML = `<span style="color:#ef4444">${data.erro}</span>`;
+            return;
+        }
+        const statusColor = data.payment.status === 'PAID' ? '#22c55e' : '#f59e0b';
+        resultDiv.innerHTML = `
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                <span style="color:#94a3b8">Status</span>
+                <span style="color:${statusColor};font-weight:600">${data.payment.status}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                <span style="color:#94a3b8">Plano</span>
+                <span>${data.payment.plano}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                <span style="color:#94a3b8">Chave</span>
+                <span style="color:#fbbf24;font-family:monospace;font-size:12px">${data.license?.license_key ?? '---'}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+                <span style="color:#94a3b8">Validade</span>
+                <span>${data.license?.expires_at ?? '---'}</span>
+            </div>
+        `;
+    } catch {
+        resultDiv.innerHTML = '<span style="color:#ef4444">Erro ao consultar servidor</span>';
+    }
+});
 </script>
-
 </body>
 </html>
