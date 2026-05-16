@@ -66,8 +66,15 @@ def find_or_create_customer(cnpj):
 
     try:
         customers_data = asaas_request("GET", f"/customers?cpfCnpj={cnpj}")
-        if isinstance(customers_data, list) and customers_data:
-            customer_id = customers_data[0].get("id")
+        # Sandbox: retorna lista. Producao: retorna {"object":"list","data":[...]}
+        if isinstance(customers_data, dict):
+            customers_list = customers_data.get("data", [])
+        elif isinstance(customers_data, list):
+            customers_list = customers_data
+        else:
+            customers_list = []
+        if customers_list:
+            customer_id = customers_list[0].get("id")
             if customer_id:
                 save_customer(cnpj, customer_id)
                 return customer_id
@@ -144,7 +151,7 @@ def criar_pagamento():
         })
 
     except requests.exceptions.HTTPError as e:
-        logger.error("HTTPError criar_pagamento: %s", e)
+        logger.error("HTTPError criar_pagamento: %s", e, exc_info=True)
         return jsonify({"erro": "Comunicação com Asaas falhou", "detalhes": str(e)}), 502
     except Exception as e:
         logger.exception("Erro inesperado criar_pagamento")
