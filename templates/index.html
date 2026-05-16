@@ -432,6 +432,18 @@ const $ = id => document.getElementById(id);
 const planos = { mensal: 29.90, trimestral: 79.90, anual: 199.90, vitalicio: 499.90 };
 let pollTimer = null;
 
+// Pré-preencher form com parâmetros da URL (enviados pelo software)
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const cnpj = params.get('cnpj');
+    const hwid = params.get('hwid');
+    if (cnpj) $('cnpj').value = cnpj;
+    if (hwid) $('hwid').value = hwid;
+    if (cnpj || hwid) {
+        setTimeout(() => toast('Dados pré-preenchidos pelo NFE Reader', 'success'), 500);
+    }
+})();
+
 // Plano cards
 document.querySelectorAll('.plano-card').forEach(card => {
     card.addEventListener('click', () => {

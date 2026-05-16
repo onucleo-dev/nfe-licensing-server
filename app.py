@@ -405,6 +405,20 @@ def obter_licenca():
     }), 200
 
 
+@app.route("/hwids")
+def list_hwids():
+    cnpj = request.args.get("cnpj")
+    if not cnpj:
+        return jsonify({"erro": "cnpj é obrigatório"}), 400
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT DISTINCT hwid FROM payments WHERE customer_cnpj = ? ORDER BY created_at DESC",
+            (cnpj,)
+        ).fetchall()
+    hwids = [row["hwid"] for row in rows]
+    return jsonify({"hwids": hwids})
+
+
 @app.route("/teste-asaas")
 def teste_asaas():
     try:
