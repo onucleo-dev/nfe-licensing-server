@@ -2,7 +2,7 @@ import os
 import sqlite3
 import datetime
 import logging
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect
 from keygen_nfe import generate_key
 import requests
 
@@ -210,6 +210,10 @@ def is_license_valid(license_record):
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route("/download")
+def download():
+    return redirect("https://github.com/onucleo-dev/nfe-licensing-server/releases/latest/download/NFE_Reader.exe")
 
 
 @app.route("/criar-pagamento", methods=["POST"])
