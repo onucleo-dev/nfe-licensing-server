@@ -1,9 +1,8 @@
 import hashlib
-import os
 from datetime import datetime, timedelta
 import re
 
-SECRET_WORD = os.getenv("SECRET_WORD", "NFE_READER_SECRET_2026")
+SECRET_WORD = "NFE_READER_SECRET_2026"
 
 
 def generate_key(cnpj: str, hwid: str, days: int) -> str:
