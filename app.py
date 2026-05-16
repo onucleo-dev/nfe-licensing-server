@@ -1,31 +1,28 @@
 import os
-import sqlite3
 import datetime
 import logging
 from flask import Flask, request, jsonify, render_template, redirect
 from keygen_nfe import generate_key
 import requests
+from db import (
+    init_db, get_customer, save_customer, save_payment,
+    update_payment_status, get_payment, get_payment_by_cnpj_hwid,
+    insert_license, get_license_by_payment, is_license_valid, list_hwids
+)
 
-# Carregar variáveis de ambiente do .env se existir
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    # python-dotenv não instalado, usar variáveis do sistema
     pass
 
 app = Flask(__name__)
-
-# =========================
-# CONFIG
-# =========================
 
 ASAAS_API_KEY = os.getenv("ASAAS_API_KEY")
 if not ASAAS_API_KEY:
     raise RuntimeError("ASAAS_API_KEY is required")
 
 ASAAS_URL = os.getenv("ASAAS_URL", "https://sandbox.asaas.com/api/v3")
-DATABASE_PATH = os.getenv("DATABASE_PATH", "nfe_licensing.db")
 WEBHOOK_TOKEN = os.getenv("WEBHOOK_TOKEN")
 
 HEADERS = {
@@ -40,61 +37,8 @@ PLANS = {
     "vitalicio": {"dias": 36500, "valor": 499.90}
 }
 
-# =========================
-# LOGGING
-# =========================
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# =========================
-# DB
-# =========================
-
-def get_db():
-    conn = sqlite3.connect(DATABASE_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def init_db():
-    with get_db() as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS customers (
-                cnpj TEXT PRIMARY KEY,
-                customer_id TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            );
-            """
-        )
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS payments (
-                payment_id TEXT PRIMARY KEY,
-                customer_cnpj TEXT NOT NULL,
-                hwid TEXT NOT NULL,
-                plano TEXT NOT NULL,
-                status TEXT NOT NULL DEFAULT 'PENDING',
-                asaas_customer_id TEXT,
-                created_at TEXT NOT NULL,
-                FOREIGN KEY(customer_cnpj) REFERENCES customers(cnpj)
-            );
-            """
-        )
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS licenses (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                payment_id TEXT NOT NULL,
-                license_key TEXT NOT NULL,
-                expires_at TEXT NOT NULL,
-                created_at TEXT NOT NULL,
-                FOREIGN KEY(payment_id) REFERENCES payments(payment_id)
-            );
-            """
-        )
-
 
 init_db()
 
@@ -115,26 +59,11 @@ def asaas_request(method, path, **kwargs):
         raise
 
 
-def get_customer(cnpj):
-    with get_db() as conn:
-        row = conn.execute("SELECT customer_id FROM customers WHERE cnpj = ?", (cnpj,)).fetchone()
-        return row["customer_id"] if row else None
-
-
-def save_customer(cnpj, customer_id):
-    with get_db() as conn:
-        conn.execute(
-            "INSERT OR REPLACE INTO customers (cnpj, customer_id, created_at) VALUES (?, ?, ?)",
-            (cnpj, customer_id, datetime.datetime.utcnow().isoformat())
-        )
-
-
 def find_or_create_customer(cnpj):
     existing = get_customer(cnpj)
     if existing:
         return existing
 
-    # busca no Asaas sandbox/prod
     try:
         customers_data = asaas_request("GET", f"/customers?cpfCnpj={cnpj}")
         if isinstance(customers_data, list) and customers_data:
@@ -153,54 +82,6 @@ def find_or_create_customer(cnpj):
 
     save_customer(cnpj, customer_id)
     return customer_id
-
-
-def save_payment(payment_id, cnpj, hwid, plano, customer_id):
-    with get_db() as conn:
-        conn.execute(
-            "INSERT OR REPLACE INTO payments (payment_id, customer_cnpj, hwid, plano, status, asaas_customer_id, created_at) VALUES (?, ?, ?, ?, 'PENDING', ?, ?)",
-            (payment_id, cnpj, hwid, plano, customer_id, datetime.datetime.utcnow().isoformat())
-        )
-
-
-def update_payment_status(payment_id, status):
-    with get_db() as conn:
-        conn.execute(
-            "UPDATE payments SET status = ? WHERE payment_id = ?", (status, payment_id)
-        )
-
-
-def get_payment(payment_id):
-    with get_db() as conn:
-        return conn.execute("SELECT * FROM payments WHERE payment_id = ?", (payment_id,)).fetchone()
-
-
-def get_payment_by_cnpj_hwid(cnpj, hwid):
-    with get_db() as conn:
-        return conn.execute(
-            "SELECT * FROM payments WHERE customer_cnpj = ? AND hwid = ? ORDER BY created_at DESC LIMIT 1",
-            (cnpj, hwid)
-        ).fetchone()
-
-
-def insert_license(payment_id, license_key, expires_at):
-    with get_db() as conn:
-        conn.execute(
-            "INSERT INTO licenses (payment_id, license_key, expires_at, created_at) VALUES (?, ?, ?, ?)",
-            (payment_id, license_key, expires_at, datetime.datetime.utcnow().isoformat())
-        )
-
-
-def get_license_by_payment(payment_id):
-    with get_db() as conn:
-        return conn.execute("SELECT * FROM licenses WHERE payment_id = ? ORDER BY id DESC LIMIT 1", (payment_id,)).fetchone()
-
-
-def is_license_valid(license_record):
-    if not license_record:
-        return False
-    expires_at = datetime.datetime.fromisoformat(license_record["expires_at"])
-    return datetime.datetime.utcnow() < expires_at
 
 
 # =========================
@@ -307,7 +188,6 @@ def webhook():
 
         logger.info("Chave gerada para %s: %s", payment_id, chave)
 
-        # Automação de entrega de chave: callback configurável
         license_callback_url = os.getenv("LICENSE_CALLBACK_URL")
         if license_callback_url:
             callback_payload = {
@@ -388,22 +268,19 @@ def obter_licenca():
     if not cnpj or not hwid:
         return jsonify({"erro": "cnpj e hwid são obrigatórios"}), 400
 
-    # Busca último pagamento para este CNPJ/HWID
     record = get_payment_by_cnpj_hwid(cnpj, hwid)
     if not record:
         return jsonify({"erro": "Nenhum pagamento encontrado para este CNPJ/HWID"}), 404
 
     if record["status"] != "PAID":
-        return jsonify({"erro": "Pagamento não foi confirmado"}), 402  # Payment Required
+        return jsonify({"erro": "Pagamento não foi confirmado"}), 402
 
-    # Busca licença associada
     license_record = get_license_by_payment(record["payment_id"])
     if not license_record:
         return jsonify({"erro": "Licença não foi gerada ainda"}), 404
 
-    # Verifica se não expirou
     if not is_license_valid(license_record):
-        return jsonify({"erro": "Licença expirada"}), 410  # Gone
+        return jsonify({"erro": "Licença expirada"}), 410
 
     return jsonify({
         "license_key": license_record["license_key"],
@@ -442,13 +319,7 @@ def list_hwids():
     cnpj = request.args.get("cnpj")
     if not cnpj:
         return jsonify({"erro": "cnpj é obrigatório"}), 400
-    with get_db() as conn:
-        rows = conn.execute(
-            "SELECT DISTINCT hwid FROM payments WHERE customer_cnpj = ? ORDER BY created_at DESC",
-            (cnpj,)
-        ).fetchall()
-    hwids = [row["hwid"] for row in rows]
-    return jsonify({"hwids": hwids})
+    return jsonify({"hwids": list_hwids(cnpj)})
 
 
 @app.route("/teste-asaas")
