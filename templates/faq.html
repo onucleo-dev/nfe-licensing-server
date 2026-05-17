@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ — NFE Reader</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        h1 { font-size: 28px; margin-bottom: 8px; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 32px; }
+        h2 { font-size: 20px; color: #f1f5f9; margin-top: 36px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #334155; }
+        details { background: #0f172a; border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+        summary { padding: 16px 20px; cursor: pointer; color: #e2e8f0; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; user-select: none; }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: "▶"; font-size: 12px; color: #60a5fa; transition: transform 0.2s; }
+        details[open] summary::before { content: "▼"; }
+        summary:hover { background: #1a2332; }
+        .answer { padding: 0 20px 16px 44px; color: #cbd5e1; font-size: 14px; line-height: 1.7; }
+        .answer p { margin-bottom: 8px; }
+        .tag { display: inline-block; background: #1e3a5f; color: #60a5fa; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-left: 6px; }
+        .back { display: inline-block; margin-top: 32px; color: #60a5fa; text-decoration: none; font-size: 14px; }
+        .back:hover { text-decoration: underline; }
+        hr { border: none; border-top: 1px solid #334155; margin: 24px 0; }
+        @media (max-width: 600px) { .container { padding: 24px 16px; } h1 { font-size: 22px; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Perguntas Frequentes</h1>
+    <p class="subtitle">NFE Reader — Tire suas dúvidas sobre o software, licenciamento e uso</p>
+
+    <h2>⚙️ Sobre o Software</h2>
+
+    <details>
+        <summary>O que é o NFE Reader?</summary>
+        <div class="answer">
+            <p>O NFE Reader é um software para Windows que lê arquivos XML de Notas Fiscais Eletrônicas (NF-e) e extrai automaticamente todos os dados para planilhas CSV/Excel. Ele gera 10 planilhas base + 4 relatórios consolidados (contas a pagar, ICMS recuperável, etc.), eliminando a digitação manual.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Preciso pagar para testar?</summary>
+        <div class="answer">
+            <p>Não. Você tem <strong>30 dias grátis</strong> com todas as funcionalidades liberadas, sem necessidade de cartão de crédito.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Funciona no Mac ou Linux?</summary>
+        <div class="answer">
+            <p>Não. Atualmente o NFE Reader é compatível apenas com <strong>Windows 7, 8, 10 e 11 (64 bits)</strong>.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Preciso de internet para usar?</summary>
+        <div class="answer">
+            <p>Só para ativar a licença e renovar. O processamento dos XMLs é <strong>100% offline</strong> — seus dados fiscais não saem do seu computador.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Quais arquivos o programa aceita?</summary>
+        <div class="answer">
+            <p>Arquivos XML de NF-e (modelo 55) e NFC-e (modelo 65). O programa também lê XMLs dentro de subpastas e arquivos .ZIP.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Posso processar XMLs de qualquer empresa?</summary>
+        <div class="answer">
+            <p>Sim. O programa apenas lê os dados do XML — não há restrição de CNPJ emitente ou destinatário.</p>
+        </div>
+    </details>
+
+    <h2>🔐 Licenciamento</h2>
+
+    <details>
+        <summary>O que é "licença por equipamento"?</summary>
+        <div class="answer">
+            <p>Cada licença do NFE Reader é vinculada ao hardware específico do computador (HWID). Isso significa que a chave de ativação de uma máquina não funciona em outra. É uma medida de segurança para evitar compartilhamento indevido.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>A chave funciona em outro computador?</summary>
+        <div class="answer">
+            <p><strong>Não.</strong> Cada licença é única por equipamento. Se você trocar de computador, precisará de uma nova chave para a máquina nova.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Formatei o PC. Perdi minha licença?</summary>
+        <div class="answer">
+            <p>Não. A licença continua válida para o mesmo hardware. Basta reinstalar o NFE Reader, registrar com o <strong>mesmo CPF/CNPJ</strong> e contatar o suporte para reativar sua chave.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Quanto tempo dura cada plano?</summary>
+        <div class="answer">
+            <p><strong>Mensal:</strong> 30 dias &nbsp;|&nbsp; <strong>Trimestral:</strong> 90 dias &nbsp;|&nbsp; <strong>Anual:</strong> 365 dias &nbsp;|&nbsp; <strong>Vitalício:</strong> 36.500 dias (tecnicamente vitalício)</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Posso renovar antes do vencimento?</summary>
+        <div class="answer">
+            <p>Sim, mas a nova chave <strong>substitui a anterior</strong> — os dias restantes da licença antiga são perdidos. Recomendamos renovar próximo ao vencimento.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Formas de pagamento aceitas?</summary>
+        <div class="answer">
+            <p>Atualmente aceitamos apenas <strong>PIX</strong>, processado pela plataforma Asaas. O pagamento é confirmado em segundos e a chave é gerada automaticamente.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Como funciona o vitalício? São atualizações gratuitas?</summary>
+        <div class="answer">
+            <p>O plano vitalício dá direito ao uso do software por tempo indeterminado. <strong>Correções de bugs</strong> são gratuitas para todos os planos. <strong>Novas funcionalidades</strong> podem ser cobradas à parte, mesmo para vitalícios.</p>
+        </div>
+    </details>
+
+    <h2>📥 Instalação e Uso</h2>
+
+    <details>
+        <summary>Como faço para instalar?</summary>
+        <div class="answer">
+            <p>1. Acesse <a href="/" style="color:#60a5fa">nfe-licensing-server.onrender.com</a><br>
+            2. Clique em "Download"<br>
+            3. Execute o arquivo <code>NFE_Reader.exe</code> baixado<br>
+            4. Preencha seus dados (nome, CPF/CNPJ, e-mail) e clique em "Registrar e Começar"</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>O Windows acusou "proteção" ao executar. É seguro?</summary>
+        <div class="answer">
+            <p>Sim, é seguro. Como o software é novo, ainda não possui certificado digital de editor (assinatura). Isso é normal para softwares independentes. Clique em <strong>"Executar assim mesmo"</strong> — o código é aberto e verificável no repositório oficial.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Como processar minhas primeiras notas?</summary>
+        <div class="answer">
+            <p>1. Clique em "🔍 Selecionar" na pasta de entrada e escolha onde estão seus XMLs<br>
+            2. Clique em "🔍 Selecionar" na pasta de saída e escolha onde salvar os CSVs<br>
+            3. Clique no botão verde "🚀 PROCESSAR XMLs"<br>
+            4. Após processar, clique em "📄 EXPORTAR CSV" para gerar as planilhas</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>O que significa "XML Bloqueado"?</summary>
+        <div class="answer">
+            <p>O programa bloqueia o processamento de XMLs apenas quando a licença está <strong>expirada</strong>. Com a licença ativa, todos os XMLs são processados normalmente. Nenhum dado é perdido — ao renovar, você volta a processar normalmente.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>O que são os relatórios consolidados?</summary>
+        <div class="answer">
+            <p>São relatórios prontos que combinam dados de várias categorias:<br>
+            <strong>contas_a_pagar.csv</strong> — tudo que vence, venceu ou vai vencer<br>
+            <strong>icms_recuperavel.csv</strong> — ICMS a recuperar nas compras<br>
+            <strong>consolidado_notas.csv</strong> — resumo financeiro de todas as notas<br>
+            <strong>consolidado_itens.csv</strong> — cada produto com impostos detalhados</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Como abrir os CSVs no Excel?</summary>
+        <div class="answer">
+            <p>Basta clicar duas vezes no arquivo. O CSV já vem no formato brasileiro: separador <code>;</code> e vírgula para decimais. Se abrir bagunçado, no Excel vá em: Dados → De Texto/CSV → Escolher separador ponto e vírgula.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>O programa lê XMLs já processados de novo?</summary>
+        <div class="answer">
+            <p>Não. Após processar, os XMLs são movidos para uma subpasta "Processados". Na próxima execução, apenas XMLs novos (ainda não processados) serão lidos. Isso evita retrabalho e duplicidade.</p>
+        </div>
+    </details>
+
+    <h2>🔒 Dados e Privacidade</h2>
+
+    <details>
+        <summary>O NFE Reader envia minhas notas fiscais para algum servidor?</summary>
+        <div class="answer">
+            <p><strong>Não.</strong> O processamento é 100% local. Os XMLs são lidos e processados no seu computador. Nenhum dado fiscal é enviado para servidores externos. A única comunicação online é para ativar/renovar a licença.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Quais dados meus são armazenados?</summary>
+        <div class="answer">
+            <p>Apenas os dados do registro: nome, CPF/CNPJ, e-mail e HWID (identificador do hardware). Consulte nossa <a href="/privacidade" style="color:#60a5fa">Política de Privacidade</a> para detalhes completos.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Posso solicitar a exclusão dos meus dados?</summary>
+        <div class="answer">
+            <p>Sim. Entre em contato pelo e-mail <strong>suporte.onucleo@gmail.com</strong> solicitando a exclusão, conforme seus direitos garantidos pela LGPD. Seus dados serão removidos, exceto quando a lei exigir manutenção (ex.: obrigações fiscais).</p>
+        </div>
+    </details>
+
+    <h2>💳 Pagamento e Reembolso</h2>
+
+    <details>
+        <summary>O pagamento é seguro?</summary>
+        <div class="answer">
+            <p>Sim. O pagamento é processado inteiramente pela plataforma <strong>Asaas</strong>, uma das maiores fintechs do Brasil, registrada no Banco Central. Seus dados bancários não passam pelo nosso servidor.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Quanto tempo leva para a chave ser gerada após o pagamento?</summary>
+        <div class="answer">
+            <p>O PIX é confirmado em segundos. A chave de licença é gerada automaticamente assim que o webhook confirma o pagamento. Na maioria dos casos, o processo leva menos de 30 segundos.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Posso pedir reembolso?</summary>
+        <div class="answer">
+            <p>Licenças vitalícias têm garantia de <strong>7 dias</strong> para reembolso (direito de arrependimento - art. 49 CDC). Para licenças de período fixo (mensal, trimestral, anual), não há reembolso após a ativação da chave, pois o produto digital foi integralmente entregue.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Perdi a chave de ativação. O que faço?</summary>
+        <div class="answer">
+            <p>Entre em contato pelo e-mail <strong>suporte.onucleo@gmail.com</strong> informando seu CPF/CNPJ. Podemos recuperar sua chave ou gerar uma nova para o mesmo equipamento.</p>
+        </div>
+    </details>
+
+    <h2>📞 Suporte</h2>
+
+    <details>
+        <summary>Como entro em contato com o suporte?</summary>
+        <div class="answer">
+            <p>E-mail: <strong>suporte.onucleo@gmail.com</strong><br>
+            WhatsApp: <strong>(51) 99663-7838</strong><br>
+            Horário de atendimento: Segunda a sexta, das 9h às 18h.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>O software tem garantia?</summary>
+        <div class="answer">
+            <p>O software é fornecido "como está", sem garantias explícitas ou implícitas, conforme detalhado nos <a href="/termos" style="color:#60a5fa">Termos de Uso</a>. Oferecemos suporte técnico para instalação, ativação e dúvidas de funcionamento.</p>
+        </div>
+    </details>
+
+    <details>
+        <summary>Onde encontro o manual completo?</summary>
+        <div class="answer">
+            <p>O manual completo está disponível em PDF no site oficial: <a href="/manual" style="color:#60a5fa">nfe-licensing-server.onrender.com/manual</a> ou diretamente no programa, clicando em "📘 Manual do Usuário".</p>
+        </div>
+    </details>
+
+    <hr>
+    <p style="text-align:center;color:#64748b;font-size:12px">© 2026 O Núcleo — Emerson Grohe. Todos os direitos reservados. NFE Reader v1.0</p>
+    <a href="/" class="back">← Voltar para o site</a>
+</div>
+</body>
+</html>

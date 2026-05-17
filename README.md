@@ -80,6 +80,15 @@ curl -X POST https://<seu_url>/webhook \
 - Recomendado migrar para PostgreSQL no ambiente de produção.
 - Verificar `ASAAS_URL` para mudar de sandbox para produção antes de ir ao ar.
 
+## Informações Legais
+
+- **Termos de Uso**: `/termos`
+- **Política de Privacidade (LGPD)**: `/privacidade`
+- **FAQ**: `/faq`
+- **© 2026 O Núcleo — Emerson Grohe. Todos os direitos reservados.**
+
+O NFE Reader é um software licenciado, não vendido. Consulte os Termos de Uso para detalhes completos sobre direitos, limitações e responsabilidades.
+
 ## Como usar /obter-licenca (cliente desktop)
 
 O endpoint `POST /obter-licenca` é projetado para o software NFE Reader verificar automaticamente se há uma licença válida.

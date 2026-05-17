@@ -99,6 +99,18 @@ def find_or_create_customer(cnpj):
 def home():
     return render_template("index.html")
 
+@app.route("/termos")
+def termos():
+    return render_template("termos.html")
+
+@app.route("/privacidade")
+def privacidade():
+    return render_template("privacidade.html")
+
+@app.route("/faq")
+def faq():
+    return render_template("faq.html")
+
 @app.route("/download")
 def download():
     return redirect("https://github.com/onucleo-dev/nfe-licensing-server/releases/latest/download/NFE_Reader.exe")
